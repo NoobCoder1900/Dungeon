@@ -42,12 +42,20 @@ public class RoomNodeSO : ScriptableObject
         GUILayout.BeginArea(rect, nodeStyle);
         
         EditorGUI.BeginChangeCheck();
+        
+        // if node has a parent or it's entrance then display as label instead of a popup
+        if (parentRoomNodeIDList.Count > 0 || roomNodeType.isEntrance)
+        {
+            EditorGUILayout.LabelField(roomNodeType.roomNodeTypeName);            
+        }
+        else
+        {
+            var selected = roomNodeTypeList.list.FindIndex((x => x == roomNodeType));
 
-        var selected = roomNodeTypeList.list.FindIndex((x => x == roomNodeType));
+            var selection = EditorGUILayout.Popup("", selected, GetRoomNodeTypesDisplay());
 
-        var selection = EditorGUILayout.Popup("", selected, GetRoomNodeTypesDisplay());
-
-        roomNodeType = roomNodeTypeList.list[selection];
+            roomNodeType = roomNodeTypeList.list[selection];
+        }
 
         if (EditorGUI.EndChangeCheck())
         {

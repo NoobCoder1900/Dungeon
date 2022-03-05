@@ -1,12 +1,15 @@
+using System;
 using Unity.Burst.Intrinsics;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.MPE;
+// ReSharper disable All
 
 public class RoomNodeGraphEditor : EditorWindow
 {
     private GUIStyle roomNodeStyle;
+    private GUIStyle roomSelectedStyle;
     private static RoomNodeGraphSO currentRoomNodeGraph;
     private RoomNodeSO currentRoomNode = null;
     private RoomNodeTypeListSO roomNodeTypeList;
@@ -29,17 +32,31 @@ public class RoomNodeGraphEditor : EditorWindow
 
     private void OnEnable()
     {
+        Selection.selectionChanged += InspectorSelectionChanged;
+        
         //Define the node layout style
         roomNodeStyle = new GUIStyle();
         roomNodeStyle.normal.background = EditorGUIUtility.Load("node1") as Texture2D;
         roomNodeStyle.normal.textColor = Color.white;
         roomNodeStyle.padding = new RectOffset(nodePadding, nodePadding, nodePadding, nodePadding);
         roomNodeStyle.border = new RectOffset(nodeBorder, nodeBorder, nodeBorder, nodeBorder);
+        
+        //Define the selected layout style
+        roomSelectedStyle = new GUIStyle();
+        roomSelectedStyle.normal.background = EditorGUIUtility.Load("node1 on") as Texture2D;
+        roomSelectedStyle.normal.textColor = Color.white;
+        roomSelectedStyle.padding = new RectOffset(nodePadding, nodePadding, nodePadding, nodePadding);
+        roomSelectedStyle.border = new RectOffset(nodeBorder, nodeBorder, nodeBorder, nodeBorder);
     
         //load room node types
         roomNodeTypeList = GameResources.Instance.roomNodeTypeList;
     }
-    
+
+    private void OnDisable()
+    {
+        Selection.selectionChanged -= InspectorSelectionChanged;
+    }
+
     /// <summary>
     /// Open node graph editor window when a node graph editor scriptable
     /// object is double clicked in the inspector
@@ -154,6 +171,11 @@ public class RoomNodeGraphEditor : EditorWindow
         {
             ShowContextMenu(currentEvent.mousePosition);
         }
+        else //Process left click mouse down on graph event
+        {
+            ClearLineDrag();
+            ClearAllSelectedRoomNodes();
+        }
         
     }
 
@@ -169,6 +191,10 @@ public class RoomNodeGraphEditor : EditorWindow
 
     private void CreateRoomNode(object mousePositionObject)
     {
+        //if current node graph is empty, create a entrance node
+        if (currentRoomNodeGraph.roomNodeList.Count == 0)
+            CreateRoomNode(new Vector2(200f, 200f), roomNodeTypeList.list.Find(x => x.isEntrance));
+        
         CreateRoomNode(mousePositionObject, roomNodeTypeList.list.Find(x => x.isNone));
     }  
 
@@ -289,9 +315,33 @@ public class RoomNodeGraphEditor : EditorWindow
     {
         foreach (var roomNode in currentRoomNodeGraph.roomNodeList)
         {
-            roomNode.Draw(roomNodeStyle);
+            if (roomNode.isSelected)
+                roomNode.Draw((roomSelectedStyle));
+            else 
+                roomNode.Draw(roomNodeStyle);
         }
 
+        GUI.changed = true;
+    }
+
+    private void ClearAllSelectedRoomNodes()
+    {
+        foreach (var roomNode in currentRoomNodeGraph.roomNodeList)
+        {
+            if (roomNode.isSelected)
+            {
+                roomNode.isSelected = false;
+                GUI.changed = true;
+            }
+        }
+    }
+
+    private void InspectorSelectionChanged()
+    {
+        RoomNodeGraphSO roomNodeGraph = Selection.activeObject as RoomNodeGraphSO;
+
+        if (roomNodeGraph == null) return;
+        currentRoomNodeGraph = roomNodeGraph;
         GUI.changed = true;
     }
 }
