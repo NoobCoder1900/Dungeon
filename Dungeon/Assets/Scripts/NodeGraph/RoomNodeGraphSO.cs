@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +7,7 @@ public class RoomNodeGraphSO : ScriptableObject
 {
     [HideInInspector] public List<RoomNodeSO> roomNodeList = new List<RoomNodeSO>();
     [HideInInspector] public RoomNodeTypeListSO roomNodeTypeList;
-    [HideInInspector] public Dictionary<string, RoomNodeSO> roomNodeDictionary = new Dictionary<string, RoomNodeSO>();
+    public readonly Dictionary<string, RoomNodeSO> roomNodeDictionary = new Dictionary<string, RoomNodeSO>();
 
     private void Awake()
     {
@@ -27,11 +25,19 @@ public class RoomNodeGraphSO : ScriptableObject
         }
     }
 
+    /// <summary>
+    /// Get room node by room nodeID
+    /// </summary>
+    public RoomNodeSO GetRoomNode(string roomNodeID)
+    {
+        return roomNodeDictionary.TryGetValue(roomNodeID, out var roomNode) ? roomNode : null;
+    }
+
     #region Editor Code
 
 #if UNITY_EDITOR
 
-    [HideInInspector] public RoomNodeSO roomNodeToDrawLineFrom = null;
+    [HideInInspector] public RoomNodeSO roomNodeToDrawLineFrom;
     [HideInInspector] public Vector2 linePosition;
 
     public void OnValidate()
