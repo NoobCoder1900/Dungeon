@@ -1,17 +1,13 @@
-using System;
-using Unity.Burst.Intrinsics;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
-using UnityEditor.MPE;
-// ReSharper disable All
 
 public class RoomNodeGraphEditor : EditorWindow
 {
     private GUIStyle roomNodeStyle;
     private GUIStyle roomSelectedStyle;
     private static RoomNodeGraphSO currentRoomNodeGraph;
-    private RoomNodeSO currentRoomNode = null;
+    private RoomNodeSO currentRoomNode;
     private RoomNodeTypeListSO roomNodeTypeList;
     
     //node layout values
@@ -184,9 +180,22 @@ public class RoomNodeGraphEditor : EditorWindow
     /// </summary>
     private void ShowContextMenu(Vector2 mousePosition)
     {
-        GenericMenu menu = new GenericMenu();
+        var menu = new GenericMenu();
         menu.AddItem(new GUIContent("Create Room Node"), false, CreateRoomNode, mousePosition);
+        menu.AddSeparator("");
+        menu.AddItem(new GUIContent("Select All Room Nodes"), false, SelectAllRoomNodes);
+        
         menu.ShowAsContext();
+    }
+
+    private void SelectAllRoomNodes()
+    {
+        foreach (var roomNode in currentRoomNodeGraph.roomNodeList)
+        {
+            roomNode.isSelected = true;
+        }
+
+        GUI.changed = true;
     }
 
     private void CreateRoomNode(object mousePositionObject)
@@ -256,7 +265,7 @@ public class RoomNodeGraphEditor : EditorWindow
         GUI.changed = true;
     }
 
-    public void DragConnectingLine(Vector2 delta)
+    private void DragConnectingLine(Vector2 delta)
     {
         currentRoomNodeGraph.linePosition += delta;
     }
@@ -264,7 +273,7 @@ public class RoomNodeGraphEditor : EditorWindow
     private void ClearLineDrag()
     {
         currentRoomNodeGraph.roomNodeToDrawLineFrom = null;
-        currentRoomNodeGraph.linePosition = Vector2.zero;;
+        currentRoomNodeGraph.linePosition = Vector2.zero;
         GUI.changed = true;
     }
 
@@ -315,10 +324,7 @@ public class RoomNodeGraphEditor : EditorWindow
     {
         foreach (var roomNode in currentRoomNodeGraph.roomNodeList)
         {
-            if (roomNode.isSelected)
-                roomNode.Draw((roomSelectedStyle));
-            else 
-                roomNode.Draw(roomNodeStyle);
+            roomNode.Draw(roomNode.isSelected ? roomSelectedStyle : roomNodeStyle);
         }
 
         GUI.changed = true;
@@ -338,7 +344,7 @@ public class RoomNodeGraphEditor : EditorWindow
 
     private void InspectorSelectionChanged()
     {
-        RoomNodeGraphSO roomNodeGraph = Selection.activeObject as RoomNodeGraphSO;
+        var roomNodeGraph = Selection.activeObject as RoomNodeGraphSO;
 
         if (roomNodeGraph == null) return;
         currentRoomNodeGraph = roomNodeGraph;
