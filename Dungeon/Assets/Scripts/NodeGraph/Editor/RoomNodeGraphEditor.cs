@@ -1,3 +1,4 @@
+using Unity.Burst.Intrinsics;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
@@ -17,6 +18,7 @@ public class RoomNodeGraphEditor : EditorWindow
     private const int nodeBorder = 12;
 
     private const float connectingLineWidth = 3f;
+    private const float connectingLineArrowSize = 6f;
     
     [MenuItem("Room Node Graph Editor", menuItem = "Window/Dungeon Editor/Room Node Graph Editor")]
 
@@ -256,13 +258,24 @@ public class RoomNodeGraphEditor : EditorWindow
                     }
                 }
             }
-        }
+        }   
     }
 
     private void DrawConnectionLine(RoomNodeSO parentRoomNode, RoomNodeSO childRoomNode)
     {
         var starPosition = parentRoomNode.rect.center;
         var endPosition = childRoomNode.rect.center;
+
+        var midPosition = (starPosition + endPosition) / 2f;
+        var direction = endPosition - starPosition;
+
+        var arrowTailPoint1 = midPosition - new Vector2(-direction.y, direction.x).normalized * connectingLineArrowSize;
+        var arrowTailPoint2 = midPosition + new Vector2(-direction.y, direction.x).normalized * connectingLineArrowSize;
+
+        var arrowHeadPoint = midPosition + direction.normalized * connectingLineArrowSize;
+        
+        Handles.DrawBezier(arrowHeadPoint, arrowTailPoint1, arrowHeadPoint, arrowTailPoint1, Color.white,null, connectingLineWidth);
+        Handles.DrawBezier(arrowHeadPoint, arrowTailPoint2, arrowHeadPoint, arrowTailPoint2, Color.white, null, connectingLineWidth);
         
         Handles.DrawBezier(starPosition, endPosition, starPosition, endPosition, Color.white, null, connectingLineWidth);
 
