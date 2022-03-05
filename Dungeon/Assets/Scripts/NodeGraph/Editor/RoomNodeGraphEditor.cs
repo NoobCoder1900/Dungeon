@@ -65,6 +65,8 @@ public class RoomNodeGraphEditor : EditorWindow
         
         //Process events
         ProcessEvents(Event.current);
+
+        DrawRoomConnections();
         
         //Draw Room Nodes
         DrawRoomNodes();
@@ -186,9 +188,11 @@ public class RoomNodeGraphEditor : EditorWindow
         AssetDatabase.AddObjectToAsset(roomNode, currentRoomNodeGraph);
         
         AssetDatabase.SaveAssets();
+        
+        currentRoomNodeGraph.OnValidate();
     }
 
-    private void ProcessMouseUpEvent(Event currentEvent)
+    private void  ProcessMouseUpEvent(Event currentEvent)
     {
         //if releasing the right mouse button and currently dragging a line
         if (currentEvent.button == 1 && currentRoomNodeGraph.roomNodeToDrawLineFrom != null)
@@ -233,6 +237,35 @@ public class RoomNodeGraphEditor : EditorWindow
     {
         currentRoomNodeGraph.roomNodeToDrawLineFrom = null;
         currentRoomNodeGraph.linePosition = Vector2.zero;;
+        GUI.changed = true;
+    }
+
+    private void DrawRoomConnections()
+    {
+        foreach (var roomNode in currentRoomNodeGraph.roomNodeList)
+        {
+            if (roomNode.childRoomNodeIDList.Count > 0)
+            {
+                foreach (var childRoomNodeID in roomNode.childRoomNodeIDList)
+                {
+                    if (currentRoomNodeGraph.roomNodeDictionary.ContainsKey(childRoomNodeID))
+                    {
+                        DrawConnectionLine(roomNode, currentRoomNodeGraph.roomNodeDictionary[childRoomNodeID]);
+
+                        GUI.changed = true;
+                    }
+                }
+            }
+        }
+    }
+
+    private void DrawConnectionLine(RoomNodeSO parentRoomNode, RoomNodeSO childRoomNode)
+    {
+        var starPosition = parentRoomNode.rect.center;
+        var endPosition = childRoomNode.rect.center;
+        
+        Handles.DrawBezier(starPosition, endPosition, starPosition, endPosition, Color.white, null, connectingLineWidth);
+
         GUI.changed = true;
     }
 
