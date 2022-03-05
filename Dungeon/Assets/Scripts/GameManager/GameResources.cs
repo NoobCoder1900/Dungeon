@@ -5,7 +5,6 @@ using UnityEngine;
 public class GameResources : MonoBehaviour
 {
     private static GameResources instance;
-
     public static GameResources Instance
     {
         get
@@ -19,18 +18,14 @@ public class GameResources : MonoBehaviour
     }
 
     #region Header DUNGEON
-
     [Space(10)]
     [Header("DUNGEON")]
-
     #endregion
-
     #region Tooltip
-
     [Tooltip("Populate with the dugeon RoomNodeTypeListSO")]
-
     #endregion
 
     public RoomNodeTypeListSO roomNodeTypeList;
 
 }
+ 

@@ -4,7 +4,10 @@ using UnityEngine;
 
 public static class HelperUtilities
 {
-    public static bool ValidataCheckEmptyString(Object thisObject, string fieldName, string stringToCheck)
+    /// <summary>
+    /// Empty string debug check
+    /// </summary>
+    public static bool ValidateCheckEmptyString(Object thisObject, string fieldName, string stringToCheck)
     {
         if (stringToCheck == "")
         {

@@ -1,12 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 public class RoomNodeSO : ScriptableObject
 {
-    [HideInInspector] public string id;
+    [HideInInspector] public string id; //GUID
     [HideInInspector] public List<string> parentRoomNodeIDList = new List<string>();
     [HideInInspector] public List<string> childRoomNodeIDList = new List<string>();
     [HideInInspector] public RoomNodeGraphSO roomNodeGraph;
@@ -17,6 +16,10 @@ public class RoomNodeSO : ScriptableObject
 
 #if UNITY_EDITOR
     [HideInInspector] public Rect rect;
+    
+    /// <summary>
+    /// Initialise node
+    /// </summary>
     public void Initialise(Rect rect, RoomNodeGraphSO nodeGraph, RoomNodeTypeSO roomNodeType)
     {
         this.rect = rect;
@@ -29,15 +32,18 @@ public class RoomNodeSO : ScriptableObject
         roomNodeTypeList = GameResources.Instance.roomNodeTypeList;
     }
 
+    /// <summary>
+    /// Draw nodes with nodestyle
+    /// </summary>
     public void Draw(GUIStyle nodeStyle)
     {
         GUILayout.BeginArea(rect, nodeStyle);
         
         EditorGUI.BeginChangeCheck();
 
-        int selected = roomNodeTypeList.list.FindIndex((x => x == roomNodeType));
+        var selected = roomNodeTypeList.list.FindIndex((x => x == roomNodeType));
 
-        int selection = EditorGUILayout.Popup("", selected, GetRoomNodeTypesDisplay());
+        var selection = EditorGUILayout.Popup("", selected, GetRoomNodeTypesDisplay());
 
         roomNodeType = roomNodeTypeList.list[selection];
 
@@ -51,16 +57,14 @@ public class RoomNodeSO : ScriptableObject
 
     public string[] GetRoomNodeTypesDisplay()
     {
-        string[] roomArray = new string[roomNodeTypeList.list.Count];
-
-        for (int i = 0; i < roomNodeTypeList.list.Count; i++)
+        var roomArray = new string[roomNodeTypeList.list.Count];
+        for (var i = 0; i < roomNodeTypeList.list.Count; i++)
         {
             if (roomNodeTypeList.list[i].displayInNodeGraphEditor)
             {
                 roomArray[i] = roomNodeTypeList.list[i].roomNodeTypeName;
             }
         }
-
         return roomArray;
     }
 #endif

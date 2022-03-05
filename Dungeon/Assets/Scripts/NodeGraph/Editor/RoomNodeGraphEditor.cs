@@ -30,41 +30,40 @@ public class RoomNodeGraphEditor : EditorWindow
         roomNodeStyle.normal.textColor = Color.white;
         roomNodeStyle.padding = new RectOffset(nodePadding, nodePadding, nodePadding, nodePadding);
         roomNodeStyle.border = new RectOffset(nodeBorder, nodeBorder, nodeBorder, nodeBorder);
-
+    
+        //load room node types
         roomNodeTypeList = GameResources.Instance.roomNodeTypeList;
     }
     
+    /// <summary>
+    /// Open node graph editor window when a node graph editor scriptable
+    /// object is double clicked in the inspector
+    /// </summary>
     [OnOpenAsset(0)]
     public static bool OnDoubleClickAsset(int instanceID, int line)
     {
-        RoomNodeGraphSO roomNodeGraph = EditorUtility.InstanceIDToObject(instanceID) as RoomNodeGraphSO;
-        if (roomNodeGraph != null)
-        {
-            OpenWindow();
-
-            currentRoomNodeGraph = roomNodeGraph;
-            return true;
-        }
-
-        return false;
+        var roomNodeGraph = EditorUtility.InstanceIDToObject(instanceID) as RoomNodeGraphSO;
+        if (roomNodeGraph == null) return false;
+        OpenWindow();
+        currentRoomNodeGraph = roomNodeGraph;
+        return true;
     }
     
+    /// <summary>
+    /// Draw editor Gui
+    /// </summary>
     void OnGUI()
     {
         //If a scriptable object of type RoomNodeGraphSO has been selected then process
-        if (currentRoomNodeGraph != null) 
-        {
-            //Process events
-            ProcessEvent(Event.current);
-            
-            //Draw Room Nodes
-            DrawRoomNodes();
+        if (currentRoomNodeGraph == null) return;
+        //Process events
+        ProcessEvent(Event.current);
+        
+        //Draw Room Nodes
+        DrawRoomNodes();
 
-            if (GUI.changed)
-            {
-                Repaint();
-            }
-        }
+        if (GUI.changed)
+            Repaint();
     }
 
     private void ProcessEvent(Event currentEvent)
@@ -72,6 +71,9 @@ public class RoomNodeGraphEditor : EditorWindow
         ProcessRoomNodeGraphEvents(currentEvent);
     }
 
+    /// <summary>
+    /// Process room node graph events
+    /// </summary>
     private void ProcessRoomNodeGraphEvents(Event currentEvent)
     {
         switch (currentEvent.type)
@@ -85,7 +87,10 @@ public class RoomNodeGraphEditor : EditorWindow
                 break;
         }
     }
-
+    
+    /// <summary>
+    /// Process mouse down event on the room node graph (not over a node)
+    /// </summary>
     private void ProcessMouseDownEvent(Event currentEvent)
     {
         //Process right click mouse down on graph event (show context menu)
@@ -96,30 +101,27 @@ public class RoomNodeGraphEditor : EditorWindow
         
     }
 
+    /// <summary>
+    /// Show context menu
+    /// </summary>
     private void ShowContextMenu(Vector2 mousePosition)
     {
         GenericMenu menu = new GenericMenu();
-        menu.AddItem(new GUIContent("Create Room Node", false, CreateRoomNode, mousePosition));
+        menu.AddItem(new GUIContent("Create Room Node"), false, CreateRoomNode, mousePosition);
         menu.ShowAsContext();
     }
 
     private void CreateRoomNode(object mousePositionObject)
     {
-        // If current node graph empty then add entrance room node first
-        if (currentRoomNodeGraph.roomNodeList.Count == 0)
-        {
-            CreateRoomNode(new Vector2(200f, 200f), roomNodeTypeList.list.Find(x => x.isEntrance));
-        }
-
         CreateRoomNode(mousePositionObject, roomNodeTypeList.list.Find(x => x.isNone));
-    }
+    }  
 
     private void CreateRoomNode(object mousePositionObject, RoomNodeTypeSO roomNodeType)
     {
-        Vector2 mousePosition = (Vector2) mousePositionObject;
+        var mousePosition = (Vector2) mousePositionObject;
         
         //create room node scriptable object asset
-        RoomNodeSO roomNode = ScriptableObject.CreateInstance<RoomNodeSO>();
+        var roomNode = CreateInstance<RoomNodeSO>();
         
         //add room node to current room node graph room node list
         currentRoomNodeGraph.roomNodeList.Add(roomNode);
@@ -134,9 +136,12 @@ public class RoomNodeGraphEditor : EditorWindow
         AssetDatabase.SaveAssets();
     }
     
+    /// <summary>
+    /// Draw the room node in the graph window
+    /// </summary>
     private void DrawRoomNodes()
     {
-        foreach (RoomNodeSO roomNode in currentRoomNodeGraph.roomNodeList)
+        foreach (var roomNode in currentRoomNodeGraph.roomNodeList)
         {
             roomNode.Draw(roomNodeStyle);
         }
