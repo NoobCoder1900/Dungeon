@@ -7,8 +7,22 @@ using UnityEngine;
 public class RoomNodeGraphSO : ScriptableObject
 {
     [HideInInspector] public List<RoomNodeSO> roomNodeList = new List<RoomNodeSO>();
-
     [HideInInspector] public RoomNodeTypeListSO roomNodeTypeList;
-
     public Dictionary<string, RoomNodeSO> romNodeDictionary = new Dictionary<string, RoomNodeSO>();
+
+    #region Editor Code
+
+#if UNITY_EDITOR
+
+    [HideInInspector] public RoomNodeSO roomNodeToDrawLineFrom = null;
+    [HideInInspector] public Vector2 linePosition;
+
+    public void SetNodeToDrawConnectionLineFrom(RoomNodeSO node, Vector2 position)
+    {
+        roomNodeToDrawLineFrom = node;
+        linePosition = position;
+    }
+#endif
+
+    #endregion
 }
