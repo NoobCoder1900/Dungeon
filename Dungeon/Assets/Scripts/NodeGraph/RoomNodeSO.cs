@@ -16,7 +16,9 @@ public class RoomNodeSO : ScriptableObject
 
 #if UNITY_EDITOR
     [HideInInspector] public Rect rect;
-    
+    [HideInInspector] public bool isLeftClickDragging = false;
+    [HideInInspector] public bool isSelected = false;
+     
     /// <summary>
     /// Initialise node
     /// </summary>
@@ -55,7 +57,7 @@ public class RoomNodeSO : ScriptableObject
         GUILayout.EndArea();
     }
 
-    public string[] GetRoomNodeTypesDisplay()
+    private string[] GetRoomNodeTypesDisplay()
     {
         var roomArray = new string[roomNodeTypeList.list.Count];
         for (var i = 0; i < roomNodeTypeList.list.Count; i++)
@@ -67,6 +69,89 @@ public class RoomNodeSO : ScriptableObject
         }
         return roomArray;
     }
+    
+    /// <summary>
+    /// Process event for the node
+    /// </summary>
+    public void ProcessEvents(Event currentEvent)
+    {
+        switch (currentEvent.type)
+        {
+            case EventType.MouseDown:
+                ProcessMouseDownEvent(currentEvent);
+                break;
+            case EventType.MouseUp:
+                ProcessMoveUpEvent(currentEvent);
+                break;
+            case EventType.MouseDrag:
+                ProcessMoveDragEvent(currentEvent);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Process mouse drag event
+    /// </summary>
+    private void ProcessMoveDragEvent(Event currentEvent)
+    {
+        //process left click drag event
+        if (currentEvent.button == 0)
+            ProcessLeftMouseDragEvent(currentEvent);
+    }
+
+    private void ProcessLeftMouseDragEvent(Event currentEvent)
+    {
+        isLeftClickDragging = true;
+
+        DragNode(currentEvent.delta);
+        GUI.changed = true;
+    }
+
+    private void DragNode(Vector2 delta)
+    {
+        rect.position += delta;
+        EditorUtility.SetDirty(this);
+    }
+
+    /// <summary>
+    /// Process mouse up events
+    /// </summary>
+    private void ProcessMoveUpEvent(Event currentEvent)
+    {
+        //if left click is up  
+        if (currentEvent.button == 0)
+            ProcessLeftClickUpEvent();
+    }
+
+    private void ProcessLeftClickUpEvent()
+    {
+        if (isLeftClickDragging)
+            isLeftClickDragging = false;
+    }
+
+    /// <summary>
+    /// Process mouse down events
+    /// </summary>
+    private void ProcessMouseDownEvent(Event currentEvent)
+    {
+        //left click
+        if (currentEvent.button == 0)
+        {
+            ProcessLeftClickDownEvent();
+        }
+    }
+
+    private void ProcessLeftClickDownEvent()
+    {
+       Selection.activeObject = this;
+        
+        //Toggle node selection
+        isSelected = !isSelected;
+    }
+
+
 #endif
 
     #endregion Editor Code
